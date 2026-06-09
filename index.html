@@ -3,161 +3,259 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Страничка</title>
+<title>Непрерывная опережающая подготовка — МЭИ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
-<style>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"><style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --font: 'Montserrat', Georgia, serif;
-  --bg:   #ffffff;
   --blue: #1D3C8F;
   --red:  #C8102E;
 }
 
+/* ── Theme variables ── */
+body.theme-dark {
+  --text:        #ffffff;
+  --text-soft:   rgba(255,255,255,0.6);
+  --seg:         rgba(255,255,255,0.20);
+  --seg-active:  #ff3355;
+  --badge-bg:    rgba(255,255,255,0.92);
+  --badge-fg:    #14254f;
+  --card-bg:     #ffffff;
+}
+body.theme-light {
+  --text:        #14213d;
+  --text-soft:   #8a93a6;
+  --seg:         #aab6cd;
+  --seg-active:  #C8102E;
+  --badge-bg:    #ffffff;
+  --badge-fg:    #1D3C8F;
+  --card-bg:     #ffffff;
+}
+
 html, body {
-  background: var(--bg);
   font-family: var(--font);
   min-height: 100vh;
+  color: var(--text);
+  overflow: hidden;
+}
+body { position: relative; }
+
+/* ════════════ Dynamic background ════════════ */
+#bg-base {
+  position: fixed; inset: 0; z-index: -3;
+  background:
+    radial-gradient(1100px 760px at 78% -12%, #dde8fb 0%, transparent 58%),
+    radial-gradient(950px 680px at 6% 112%, #fbe3e9 0%, transparent 58%),
+    linear-gradient(160deg, #f4f7fd 0%, #eef3fb 48%, #f7f3f6 100%);
+}
+.glow {
+  position: fixed; border-radius: 50%;
+  filter: blur(95px); opacity: 0.42; z-index: -2;
+  pointer-events: none; will-change: transform;
+}
+.glow.g1 { width: 46vw; height: 46vw; left: -8vw; top: -10vw;
+  background: radial-gradient(circle, #8aabf2 0%, transparent 68%);
+  animation: drift1 26s ease-in-out infinite; }
+.glow.g2 { width: 40vw; height: 40vw; right: -6vw; top: 8vh;
+  background: radial-gradient(circle, #f49db0 0%, transparent 68%);
+  opacity: 0.34; animation: drift2 32s ease-in-out infinite; }
+.glow.g3 { width: 52vw; height: 52vw; left: 25vw; bottom: -22vw;
+  background: radial-gradient(circle, #93bcf3 0%, transparent 68%);
+  opacity: 0.34; animation: drift3 38s ease-in-out infinite; }
+
+@keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(6vw,5vh)} }
+@keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-5vw,6vh)} }
+@keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-4vw,-5vh)} }
+
+#bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+/* Static-mode background */
+#bg-static { position: fixed; inset: 0; z-index: -3; background-size: cover; background-position: center; }
+
+/* ════════════ Header ════════════ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 32px;
+  padding: 22px 46px 14px;
+  position: relative; z-index: 5;
+}
+.title-wrap { display: flex; align-items: center; gap: 18px; }
+.title-accent {
+  width: 6px; align-self: stretch; border-radius: 4px;
+  background: linear-gradient(180deg, var(--red), #ff5a73);
+  box-shadow: 0 0 18px rgba(200,16,46,0.6);
+}
+.topbar h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(1.3rem, 2.5vw, 2.5rem);
+  font-weight: 800; line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.25);
+}
+.topbar h1 .accent { color: #ff5a73; }
+.header-logo {
+  height: clamp(92px, 9.5vw, 165px);
+  width: auto; object-fit: contain; flex-shrink: 0;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.14));
 }
 
-/* ── Dim overlay ── */
-#overlay {
-  position: fixed; inset: 0;
-  background: transparent;
-  pointer-events: none;
-  transition: background 0.35s ease;
-  z-index: 10;
-}
-#overlay.active { background: rgba(0,0,0,0.50); }
-
-/* ── Header block ── */
-.header-block {
-  text-align: center;
-  padding: 28px 48px 8px;
+/* ════════════ Circles canvas ════════════ */
+.circles-section {
+  display: flex; justify-content: center;
+  padding: 14px 0 26px;
   position: relative; z-index: 2;
 }
-.header-block h1 {
-  font-size: clamp(1.4rem, 3vw, 2.4rem);
-  font-weight: 300; letter-spacing: -0.01em; line-height: 1.1; color: #111;
-}
-.header-block p { margin-top: 6px; font-size: 0.9rem; color: #999; font-weight: 300; }
-
-/* ── Section wrapper ── */
-.circles-section {
-  display: flex;
-  justify-content: center;
-  padding: 24px 0 32px;
-}
-
-/* ── Canvas ── */
-#circlesCanvas {
-  position: relative;
-  flex-shrink: 0;
-}
+#circlesCanvas { position: relative; flex-shrink: 0; }
 
 #connections-svg {
   position: absolute; top: 0; left: 0;
-  pointer-events: none; z-index: 1;
-  overflow: visible;
+  pointer-events: none; z-index: 1; overflow: visible;
 }
+.seg {
+  fill: none;
+  stroke: var(--seg);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 11;
+  marker-end: url(#arrowhead);
+  animation: march 5.5s linear infinite;
+  transition: stroke 0.25s ease, stroke-width 0.25s ease;
+}
+.seg.active {
+  stroke: var(--seg-active);
+  stroke-width: 4.5;
+  marker-end: url(#arrowhead-active);
+  filter: drop-shadow(0 0 7px rgba(200,16,46,0.55));
+  animation: march 2.4s linear infinite;
+}
+/* arrowhead colors (recolor together with the line) */
+#arrowhead path { fill: var(--seg); }
+#arrowhead-active path { fill: var(--seg-active); }
+@keyframes march { to { stroke-dashoffset: -180; } }
 
 /* ── Circle slot ── */
 .circle-slot {
-  position: absolute;
-  z-index: 2;
-  transition: filter 0.3s ease;
+  position: absolute; z-index: 2;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.circle-slot.dimmed { filter: brightness(0.28); }
+body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 
 /* ── Circle ── */
 .circle {
   width: 100%; height: 100%;
   border-radius: 50%;
   position: relative;
-  overflow: hidden;
   cursor: pointer;
+  border: 1.5px solid rgba(255,255,255,0.30);
+  box-shadow:
+    0 14px 36px rgba(20,40,90,0.26),
+    inset 0 2px 1px rgba(255,255,255,0.4),
+    inset 0 -18px 40px rgba(0,0,0,0.26);
   transition: transform 0.35s cubic-bezier(0.34,1.1,0.64,1), box-shadow 0.35s ease;
+  overflow: hidden;
 }
-.circle:hover {
+.circle.cb { background: radial-gradient(circle at 34% 26%, #4063d6 0%, #1b3784 52%, #122a6b 100%); }
+.circle.cr { background: radial-gradient(circle at 34% 26%, #e8415a 0%, #b51028 52%, #8d0c20 100%); }
+
+/* glossy sheen */
+.circle::after {
+  content: ''; position: absolute; left: 8%; top: 6%; width: 84%; height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.30), transparent 70%);
+  pointer-events: none;
+}
+/* outer halo ring */
+.circle-slot::before {
+  content: ''; position: absolute; inset: -7px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0.96);
+}
+.circle-slot.focus::before { opacity: 1; transform: scale(1); }
+.circle-slot.focus { transform: translateY(-2px); }
+.circle-slot.focus .circle {
   transform: scale(1.06);
 }
-.circle img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
-.circle-dim {
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0.25); z-index: 1;
-}
+.circle.cb { } /* keep */
+.circle-slot.focus .circle.cb { box-shadow: 0 22px 60px rgba(33,72,184,0.55), inset 0 2px 1px rgba(255,255,255,0.4); }
+.circle-slot.focus .circle.cr { box-shadow: 0 22px 60px rgba(200,16,46,0.55), inset 0 2px 1px rgba(255,255,255,0.4); }
+
+.circle img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.circle-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.22); z-index: 1; }
 .circle-title {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  text-align: center; padding: 16px;
-  color: #fff;
-  font-weight: 700;
-  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.25;
-  z-index: 2;
-  text-shadow: 0 1px 10px rgba(0,0,0,0.5);
-  /* font-size set by JS based on SZ */
+  text-align: center; padding: 11%;
+  color: #fff; font-weight: 700;
+  letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.18;
+  z-index: 2; text-shadow: 0 1px 12px rgba(0,0,0,0.55);
+  word-break: break-word; hyphens: auto;
 }
 
-/* ── Hover card ── */
-#hoverCard {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%) scale(0.93);
-  width: min(860px, 94vw);
-  max-height: 92vh;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 40px 120px rgba(0,0,0,0.38);
-  z-index: 100;
-  opacity: 0;
+/* ── Sequence badge ── */
+.seq-badge {
+  position: absolute; top: 4%; left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--badge-bg); color: var(--badge-fg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', sans-serif; font-weight: 700;
+  z-index: 3; box-shadow: 0 3px 10px rgba(0,0,0,0.3);
   pointer-events: none;
-  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.34,1.1,0.64,1);
-}
-#hoverCard.visible {
-  opacity: 1; pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
 }
 
+/* ════════════ Hover card ════════════ */
+#hoverCard {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.93);
+  width: min(860px, 92vw); max-height: 90vh; overflow-y: auto;
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 50px 130px rgba(0,0,0,0.55);
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity 0.26s ease, transform 0.32s cubic-bezier(0.34,1.1,0.64,1);
+}
+#hoverCard.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 #cardImages {
   display: grid; grid-template-columns: 1fr 1fr;
-  height: 320px;
-  background: var(--blue);
-  border-radius: 8px 8px 0 0;
-  overflow: hidden;
+  height: 300px; background: var(--blue);
+  border-radius: 14px 14px 0 0; overflow: hidden;
 }
 #cardImages.one-image { grid-template-columns: 1fr; }
 #cardImages.no-images { display: none; }
-
 .card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-#cardBody { padding: 36px 44px 44px; border-top: 3px solid #f0f0f0; }
+#cardBody { padding: 32px 42px 40px; }
 #cardTitle {
-  font-size: 28px; font-weight: 700; color: #111;
-  letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 27px; font-weight: 800; color: #111;
+  letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 14px;
 }
-#cardText { font-size: 16px; line-height: 1.8; color: #555; font-weight: 300; }
-
+#cardTitle::after {
+  content: ''; display: block; width: 54px; height: 4px; margin-top: 12px;
+  background: var(--red); border-radius: 3px;
+}
+#cardText { font-size: 16px; line-height: 1.75; color: #555; font-weight: 400; }
 #cardClose {
-  position: absolute; top: 16px; right: 20px;
-  font-size: 26px; color: rgba(255,255,255,0.9);
-  cursor: pointer; z-index: 5; line-height: 1;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
-  transition: color 0.15s; user-select: none;
+  position: absolute; top: 14px; right: 18px; font-size: 26px;
+  color: rgba(255,255,255,0.95); cursor: pointer; z-index: 5; line-height: 1;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6); user-select: none; transition: color 0.15s;
 }
 #cardClose:hover { color: #fff; }
-#hoverCard.no-img-card #cardClose { color: #aaa; text-shadow: none; }
+#hoverCard.no-img-card #cardClose { color: #999; text-shadow: none; }
 </style>
 </head>
-<body>
+<body class="theme-light">
 
-<div id="overlay"></div>
+
+<div id="bg-base"></div>
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="glow g3"></div>
+<canvas id="bg-canvas"></canvas>
+
 
 <div id="hoverCard">
   <span id="cardClose">×</span>
@@ -168,9 +266,13 @@ html, body {
   </div>
 </div>
 
-
-<div class="header-block"><h1>Экосистема МЭИ</h1><p>Непрерывная подготовка кадров для технологического лидерства</p></div>
-
+<header class="topbar">
+  <div class="title-wrap">
+    <span class="title-accent"></span>
+    <h1>Непрерывная опережающая подготовка</h1>
+  </div>
+  <img class="header-logo" src="static/logo_color.png" alt="МЭИ">
+</header>
 
 <div class="circles-section">
   <div id="circlesCanvas">
@@ -178,8 +280,7 @@ html, body {
     
     
     <div class="circle-slot" data-index="0">
-      <div class="circle"
-        style="background: var(--blue);"
+      <div class="circle cb"
         data-title="Ранняя профориентация"
         data-description="МЭИ реализует широкий спектр программ для школьников: ежегодная Открытая московская инженерная конференция «Потенциал» собирает более 600 участников из Москвы и регионов, проводятся «Инженерные каникулы» для учеников 10-х классов и «Университетские субботы». Также действуют олимпиады «Надежда энергетики» по математике и физике для 7–11 классов. Победители конференции получают дополнительные баллы при поступлении в МЭИ."
         data-card1="https://picsum.photos/seed/school1/600/400"
@@ -189,12 +290,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Ранняя профориентация</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="1">
-      <div class="circle"
-        style="background: var(--red);"
+      <div class="circle cr"
         data-title="Посвящение в студенты"
         data-description="Посвящение в студенты — многолетняя традиция МЭИ, которой с нетерпением ждут все первокурсники. Мероприятие включает верёвочный курс, командные испытания, произнесение торжественной клятвы институту и зажигательные конкурсы. Праздник организуют наставники, кураторы и деканат, чтобы новые студенты почувствовали себя частью единого студенческого братства МЭИ."
         data-card1="https://picsum.photos/seed/students1/600/400"
@@ -204,12 +305,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Посвящение в студенты</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="2">
-      <div class="circle"
-        style="background: var(--blue);"
+      <div class="circle cb"
         data-title="Проект «Эталон»"
         data-description="Программа «Эталон» направлена на углублённую подготовку студентов по фундаментальным дисциплинам. Проект ориентирован на формирование у будущих инженеров прочной теоретической базы как эталона профессиональной компетентности. Программа сочетает академические лекции с практическими занятиями на современном оборудовании МЭИ."
         data-card1="https://picsum.photos/seed/lab1/600/400"
@@ -219,12 +320,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Проект «Эталон»</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="3">
-      <div class="circle"
-        style="background: var(--red);"
+      <div class="circle cr"
         data-title="Интеллектуальная сборная"
         data-description="Интеллектуальная сборная МЭИ — официальное объединение университета, которое готовит студентов к участию в олимпиадах и интеллектуальных соревнованиях любого уровня. Команда объединяет опытных наставников и победителей конкурсов, помогая участникам эффективно готовиться к состязаниям по инженерным дисциплинам, включая Всероссийский инженерный конкурс."
         data-card1="https://picsum.photos/seed/olymp1/600/400"
@@ -234,12 +335,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Интеллектуальная сборная</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="4">
-      <div class="circle"
-        style="background: var(--blue);"
+      <div class="circle cb"
         data-title="Трудоустройство"
         data-description="Центр развития карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходит Ярмарка вакансий с участием около 30 работодателей — РусГидро, Россети, Мосводоканал и других ведущих компаний."
         data-card1="https://picsum.photos/seed/career1/600/400"
@@ -249,12 +350,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Трудоустройство</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="5">
-      <div class="circle"
-        style="background: var(--red);"
+      <div class="circle cr"
         data-title="СКБ МЭИ"
         data-description="Студенческое конструкторское бюро МЭИ открыто совместно с АО «Силовые машины». Студенты 3–4 курсов работают над реальными проектами в области паровых и газовых турбин, гидроагрегатов и систем автоматики, используя профессиональные САПР (Siemens NX, Ansys). Участники получают ежемесячную оплату до 42 000 рублей и гарантированное трудоустройство."
         data-card1="https://picsum.photos/seed/engine1/600/400"
@@ -264,12 +365,12 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">СКБ МЭИ</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="6">
-      <div class="circle"
-        style="background: var(--blue);"
+      <div class="circle cb"
         data-title="Инженерные чемпионаты"
         data-description="Студенты МЭИ ежегодно участвуют в Международном инженерном чемпионате CASE-IN — крупнейшем соревновании по решению инженерных кейсов в сфере энергетики. В 2025 году финалистами стали три команды университета. Помимо этого, команда MPEI Racing представляет МЭИ на международных соревнованиях Formula Student."
         data-card1="https://picsum.photos/seed/champ1/600/400"
@@ -279,12 +380,27 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Инженерные чемпионаты</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
     
     <div class="circle-slot" data-index="7">
-      <div class="circle"
-        style="background: var(--red);"
+      <div class="circle cr"
+        data-title="Лидеры отрасли"
+        data-description="Выпускники МЭИ возглавляют крупнейшие энергетические и промышленные компании страны — РусГидро, Россети, Интер РАО, Объединённую двигателестроительную корпорацию. Многие из них возвращаются в университет в качестве наставников, преподавателей и членов попечительского совета, передавая опыт новым поколениям инженеров и замыкая цикл подготовки кадров: от школьной профориентации до формирования технологической элиты отрасли."
+        data-card1="https://picsum.photos/seed/leaders1/600/400"
+        data-card2="https://picsum.photos/seed/leaders2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Лидеры отрасли</div>
+      </div>
+      <div class="seq-badge"></div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="8">
+      <div class="circle cb"
         data-title="Эндаумент-фонд"
         data-description="Эндаумент-фонд МЭИ — благотворительный механизм, при котором пожертвования формируют неприкосновенный целевой капитал: сами средства не расходуются, а ежегодный инвестиционный доход направляется на поддержку студентов, преподавателей и развитие университета. Фонд создаёт устойчивый независимый источник финансирования науки и образования."
         data-card1="https://picsum.photos/seed/fund1/600/400"
@@ -294,6 +410,7 @@ html, body {
         <div class="circle-dim"></div>
         <div class="circle-title">Эндаумент-фонд</div>
       </div>
+      <div class="seq-badge"></div>
     </div>
     
   </div>
@@ -301,229 +418,265 @@ html, body {
 
 <script>
 (function () {
-  /* ─── Responsive geometry: fit 4 circles in viewport width+height ─── */
-  const H_PAD      = 80;
-  const MIN_GAP    = 36;
-  const MAX_SZ     = 260;
-  const GAP_V_RATIO = 0.28;                    // vertical gap = 28% of SZ (was 42%)
-  const availW     = window.innerWidth - H_PAD;
+  /* ─── Responsive geometry ─── */
+  const H_PAD       = 80;
+  const MIN_GAP     = 36;
+  const MAX_SZ      = 300;
+  const MAX_GAP_RATIO = 0.72;
+  const GAP_V_RATIO = 0.30;
+  const HEADER_H    = 200;
+  const V_PAD       = 56;
+  const availW      = window.innerWidth - H_PAD;
 
-  // How many rows do we have? Pre-compute to cap SZ by height
-  const totalCircles = document.querySelectorAll('.circle-slot').length;
-  let remTmp = totalCircles, riTmp = 0, rowsTmp = 0;
-  while (remTmp > 0) { const w = riTmp % 2 === 0; remTmp -= Math.min(w ? 4 : 3, remTmp); riTmp++; rowsTmp++; }
+  const slots = [...document.querySelectorAll('.circle-slot')];
+  const total = slots.length;
 
-  // Height constraint: header ~80px, section padding ~56px
-  const HEADER_H  = 80;
-  const V_PAD     = 56;
-  const availH    = window.innerHeight - HEADER_H - V_PAD;
-  // canvas height = (rows-1)*(SZ*(1+GAP_V_RATIO)) + SZ = SZ*((rows-1)*(1+GAP_V_RATIO)+1)
-  const H_FACTOR  = (rowsTmp - 1) * (1 + GAP_V_RATIO) + 1;
-  const MAX_SZ_H  = Math.floor(availH / H_FACTOR);
+  /* rows bottom→top, wide(4)/narrow(3) alternating */
+  const rowsFromBottom = [];
+  let rem = total, ri = 0;
+  while (rem > 0) {
+    const isWide = ri % 2 === 0;
+    const count  = Math.min(isWide ? 4 : 3, rem);
+    rowsFromBottom.push({ count, isWide, start: total - rem });
+    rem -= count; ri++;
+  }
+  const totalRows = rowsFromBottom.length;
+
+  const availH   = window.innerHeight - HEADER_H - V_PAD;
+  const H_FACTOR = (totalRows - 1) * (1 + GAP_V_RATIO) + 1;
+  const MAX_SZ_H = Math.floor(availH / H_FACTOR);
 
   let SZ, GAP_H;
-  const effectiveMax = Math.min(MAX_SZ, MAX_SZ_H);
-  if ((availW - 4 * effectiveMax) / 3 >= MIN_GAP) {
-    SZ    = effectiveMax;
-    GAP_H = Math.floor((availW - 4 * SZ) / 3);
+  const effMax = Math.min(MAX_SZ, MAX_SZ_H);
+  if ((availW - 4 * effMax) / 3 >= MIN_GAP) {
+    SZ = effMax; GAP_H = Math.floor((availW - 4 * SZ) / 3);
   } else {
-    GAP_H = MIN_GAP;
-    SZ    = Math.min(effectiveMax, Math.floor((availW - 3 * GAP_H) / 4));
+    GAP_H = MIN_GAP; SZ = Math.min(effMax, Math.floor((availW - 3 * GAP_H) / 4));
   }
+  GAP_H = Math.min(GAP_H, Math.round(SZ * MAX_GAP_RATIO));
 
   const UNIT     = SZ + GAP_H;
   const GAP_V    = Math.round(SZ * GAP_V_RATIO);
   const ROW_H    = SZ + GAP_V;
   const CANVAS_W = 3 * UNIT + SZ;
 
-  /* Grid left-edge positions */
-  const EVEN_X = [0, UNIT, 2 * UNIT, 3 * UNIT];
-  const ODD_X  = [UNIT / 2, 1.5 * UNIT, 2.5 * UNIT];
-
-  /* ─── Build rows bottom → top ──────────────────────────────── */
-  /* row[0] = BOTTOM row (first in snake), row[last] = TOP row    */
-  const slots = [...document.querySelectorAll('.circle-slot')];
-  const total = slots.length;
-
-  const rowsFromBottom = [];  // [{count, isWide}]  isWide=true → 4 circles (EVEN_X)
-  let rem = total, ri = 0;
-  while (rem > 0) {
-    const isWide = ri % 2 === 0;   // even rows (from bottom) are wide (4)
-    const count  = Math.min(isWide ? 4 : 3, rem);
-    rowsFromBottom.push({ count, isWide, start: total - rem });
-    rem -= count; ri++;
+  /* centered x positions for any row count */
+  function rowX(count) {
+    const offset = (3 * UNIT - (count - 1) * UNIT) / 2;
+    return Array.from({ length: count }, (_, i) => offset + i * UNIT);
   }
 
-  const totalRows = rowsFromBottom.length;
+  const titleRatio = 0.12;
 
-  /* Assign positions: row[0] goes to BOTTOM of canvas (highest y) */
   rowsFromBottom.forEach((row, rFromBot) => {
     const rFromTop = totalRows - 1 - rFromBot;
-    const xArr     = row.isWide ? EVEN_X : ODD_X;
+    const xArr = rowX(row.count);
     for (let c = 0; c < row.count; c++) {
       const slot = slots[row.start + c];
-      slot.style.width  = SZ + 'px';
+      slot.style.width = SZ + 'px';
       slot.style.height = SZ + 'px';
-      slot.style.left   = Math.round(xArr[c]) + 'px';
-      slot.style.top    = Math.round(rFromTop * ROW_H) + 'px';
+      slot.style.left = Math.round(xArr[c]) + 'px';
+      slot.style.top  = Math.round(rFromTop * ROW_H) + 'px';
       slot.dataset.rowFromBot = rFromBot;
-      slot.dataset.col        = c;
-      slot.querySelector('.circle-title').style.fontSize =
-        Math.round(SZ * 0.12) + 'px';
+
+      const titleEl = slot.querySelector('.circle-title');
+      const txt = titleEl.textContent.trim();
+      const longest = Math.max(...txt.split(/\s+/).map(w => w.length));
+      const innerW = SZ * 0.78;
+      const baseFont = SZ * titleRatio;
+      const fitFont  = innerW / (longest * 0.60);
+      titleEl.style.fontSize = Math.round(Math.max(12, Math.min(baseFont, fitFont))) + 'px';
     }
   });
 
-  /* Canvas size */
   const canvas = document.getElementById('circlesCanvas');
   canvas.style.width  = CANVAS_W + 'px';
   canvas.style.height = ((totalRows - 1) * ROW_H + SZ) + 'px';
 
-  /* ─── Center coords of a slot ──────────────────────────────── */
   function C(slot) {
-    return {
-      x: parseFloat(slot.style.left) + SZ / 2,
-      y: parseFloat(slot.style.top)  + SZ / 2,
-    };
+    return { x: parseFloat(slot.style.left) + SZ / 2, y: parseFloat(slot.style.top) + SZ / 2 };
+  }
+  function edgePoint(center, target, r) {
+    const dx = target.x - center.x, dy = target.y - center.y;
+    const d = Math.hypot(dx, dy) || 1;
+    return { x: center.x + dx / d * r, y: center.y + dy / d * r };
   }
 
-  /* ─── Dashed line style ─────────────────────────────────────── */
-  function dash(el) {
-    el.setAttribute('fill', 'none');
-    el.setAttribute('stroke', '#bbb');
-    el.setAttribute('stroke-width', '2');
-    el.setAttribute('stroke-dasharray', '6 12');
-    el.setAttribute('stroke-linecap', 'round');
-  }
+  /* ─── snake reading order ─── */
+  const snakeOrder = [];
+  rowsFromBottom.forEach((row, rFromBot) => {
+    const goRight = rFromBot % 2 === 0;
+    const rs = slots.slice(row.start, row.start + row.count);
+    snakeOrder.push(...(goRight ? rs : rs.slice().reverse()));
+  });
+  snakeOrder.forEach((s, i) => { s.dataset.snakeIdx = i; });
 
-  /* Straight dashed segment */
-  function drawLine(svg, p1, p2) {
-    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    l.setAttribute('x1', p1.x); l.setAttribute('y1', p1.y);
-    l.setAttribute('x2', p2.x); l.setAttribute('y2', p2.y);
-    dash(l); svg.appendChild(l);
-  }
+  /* number badges */
+  const bDim = Math.max(22, Math.round(SZ * 0.125));
+  snakeOrder.forEach((slot, i) => {
+    const b = slot.querySelector('.seq-badge');
+    b.textContent = i + 1;
+    b.style.width = bDim + 'px';
+    b.style.height = bDim + 'px';
+    b.style.fontSize = Math.round(bDim * 0.52) + 'px';
+  });
 
-  /*
-    True D-shaped circular arc using SVG arc command.
-    Approximates a semicircle on the side, connecting p1 to p2.
-    side = 'right' → bulges right, side = 'left' → bulges left.
-  */
-  function drawArc(svg, p1, p2, side) {
-    const sign  = side === 'right' ? 1 : -1;
-    const dx    = p2.x - p1.x;
-    const dy    = p2.y - p1.y;
-    const chord = Math.sqrt(dx * dx + dy * dy);
+  /* ─── connection segments ─── */
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  let aSize = Math.max(7, Math.round(SZ * 0.05));
+  const outgoing = snakeOrder.map(() => []);   // snakeIdx → [seg elements]
 
-    /* Radius: make the arc a nice semicircle-ish shape.
-       For a true semicircle the radius = chord/2. We use chord*0.58
-       to get a well-rounded but not too tight arc. */
-    const r = Math.round(chord * 0.58);
-
-    /* SVG arc: rx ry x-rot large-arc-flag sweep-flag x y
-       sweep=1 → clockwise, 0 → counter-clockwise.
-       For right bulge going upward: sweep=0
-       For left  bulge going upward: sweep=1  */
-    const sweep = side === 'right' ? 0 : 1;
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d',
-      `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 ${sweep} ${p2.x} ${p2.y}`
-    );
-    dash(path); svg.appendChild(path);
-  }
-
-  /* ─── Draw all connections (boustrophedon, bottom→top) ──────── */
-  function drawLines() {
-    const svg = document.getElementById('connections-svg');
-    svg.innerHTML = '';
-
-    /*
-      Direction of each row (from the snake's perspective):
-      rFromBot=0 (bottom): LEFT → RIGHT
-      rFromBot=1:          RIGHT → LEFT
-      rFromBot=2:          LEFT → RIGHT
-      etc.
-    */
-    rowsFromBottom.forEach((row, rFromBot) => {
-      const goRight  = rFromBot % 2 === 0;
-      const rowSlots = slots.slice(row.start, row.start + row.count);
-
-      /* Within-row connections */
-      if (goRight) {
-        for (let c = 0; c < rowSlots.length - 1; c++)
-          drawLine(svg, C(rowSlots[c]), C(rowSlots[c + 1]));
-      } else {
-        for (let c = rowSlots.length - 1; c > 0; c--)
-          drawLine(svg, C(rowSlots[c]), C(rowSlots[c - 1]));
-      }
-
-      /* Arc to the next row UP */
-      if (rFromBot < rowsFromBottom.length - 1) {
-        const nextRow   = rowsFromBottom[rFromBot + 1];
-        const nextSlots = slots.slice(nextRow.start, nextRow.start + nextRow.count);
-
-        if (goRight) {
-          /* Ended at rightmost of current → arc RIGHT to rightmost of row above */
-          drawArc(svg,
-            C(rowSlots[rowSlots.length - 1]),
-            C(nextSlots[nextSlots.length - 1]),
-            'right');
-        } else {
-          /* Ended at leftmost of current → arc LEFT to leftmost of row above */
-          drawArc(svg,
-            C(rowSlots[0]),
-            C(nextSlots[0]),
-            'left');
-        }
-      }
+  function slotByTitle(t) {
+    return slots.find(s => {
+      const el = s.querySelector('.circle');
+      return el && el.dataset.title === t;
     });
   }
 
-  window.addEventListener('load', drawLines);
+  function makeSeg(svg, d) {
+    const path = document.createElementNS(SVGNS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'seg');
+    svg.appendChild(path);
+    return path;
+  }
+
+  function markerDef(id) {
+    return '<marker id="' + id + '" markerUnits="userSpaceOnUse" ' +
+      'markerWidth="' + aSize + '" markerHeight="' + aSize + '" ' +
+      'refX="' + (aSize * 0.78) + '" refY="' + (aSize / 2) + '" orient="auto-start-reverse">' +
+      '<path d="M0,0 L' + aSize + ',' + (aSize/2) + ' L0,' + aSize + ' Z"/></marker>';
+  }
+
+  function buildSegments() {
+    const svg = document.getElementById('connections-svg');
+    svg.innerHTML = '<defs>' + markerDef('arrowhead') + markerDef('arrowhead-active') + '</defs>';
+
+    /* snake consecutive pairs */
+    for (let i = 0; i < snakeOrder.length - 1; i++) {
+      const a = snakeOrder[i], b = snakeOrder[i + 1];
+      const ca = C(a), cb = C(b);
+      const p1 = edgePoint(ca, cb, SZ / 2 + 1);
+      const p2 = edgePoint(cb, ca, SZ / 2 + aSize * 0.7);
+      const sameRow = a.dataset.rowFromBot === b.dataset.rowFromBot;
+      let d;
+      if (sameRow) {
+        d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+      } else {
+        const dir = Math.sign(cb.y - ca.y);
+        const k = Math.abs(cb.y - ca.y) * 0.5;
+        d = `M ${p1.x} ${p1.y} C ${p1.x} ${p1.y + dir*k} ${p2.x} ${p2.y - dir*k} ${p2.x} ${p2.y}`;
+      }
+      outgoing[i].push(makeSeg(svg, d));
+    }
+
+    /* special return loop: Трудоустройство → Ранняя профориентация */
+    const trud = slotByTitle('Трудоустройство');
+    const rann = slotByTitle('Ранняя профориентация');
+    if (trud && rann) {
+      const ca = C(trud), cb = C(rann);
+      const leftX = Math.min(ca.x, cb.x);
+      const ctrl  = { x: leftX - SZ * 0.52, y: (ca.y + cb.y) / 2 };
+      const p1 = edgePoint(ca, ctrl, SZ / 2 + 1);
+      const p2 = edgePoint(cb, ctrl, SZ / 2 + aSize * 0.7);
+      const d = `M ${p1.x} ${p1.y} Q ${ctrl.x} ${ctrl.y} ${p2.x} ${p2.y}`;
+      outgoing[+trud.dataset.snakeIdx].push(makeSeg(svg, d));
+    }
+  }
+
+  /* ─── Dynamic particle network ─── */
+  function initParticles() {
+    const cv = document.getElementById('bg-canvas');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    let W, H, pts;
+    function resize() {
+      W = cv.width = window.innerWidth;
+      H = cv.height = window.innerHeight;
+      const n = Math.min(70, Math.round(W * H / 32000));
+      pts = Array.from({ length: n }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.28, vy: (Math.random() - 0.5) * 0.28
+      }));
+    }
+    resize();
+    function tick() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+      }
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 155) {
+            ctx.strokeStyle = 'rgba(55,90,175,' + (0.16 * (1 - dist / 155)) + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+          }
+        }
+      }
+      for (const p of pts) {
+        ctx.fillStyle = 'rgba(40,75,155,0.5)';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 1.7, 0, Math.PI * 2); ctx.fill();
+      }
+      requestAnimationFrame(tick);
+    }
+    window.addEventListener('resize', resize);
+    tick();
+  }
+
+  window.addEventListener('load', () => { buildSegments(); initParticles(); });
   window.addEventListener('resize', () => location.reload());
 
-  /* ─── Hover card ────────────────────────────────────────────── */
-  const overlay   = document.getElementById('overlay');
+  /* ─── Hover card + red-arrow flow ─── */
+  const body      = document.body;
   const card      = document.getElementById('hoverCard');
   const cardImgs  = document.getElementById('cardImages');
   const cardTitle = document.getElementById('cardTitle');
   const cardText  = document.getElementById('cardText');
   const cardClose = document.getElementById('cardClose');
-  let hideTimer   = null;
+  let hideTimer = null, activeSegs = [];
 
-  function showCard(circle) {
+  /* Sticky: highlight stays until another circle is hovered */
+  function setActiveArrows(slot) {
+    const next = outgoing[+slot.dataset.snakeIdx] || [];
+    if (next === activeSegs) return;
+    activeSegs.forEach(s => s.classList.remove('active'));
+    activeSegs = next.slice();
+    activeSegs.forEach(s => s.classList.add('active'));
+  }
+
+  function showCard(circleEl) {
     clearTimeout(hideTimer);
-    const img1 = circle.dataset.card1;
-    const img2 = circle.dataset.card2;
+    const slot = circleEl.closest('.circle-slot');
+    const img1 = circleEl.dataset.card1, img2 = circleEl.dataset.card2;
     cardImgs.innerHTML = '';
     if (!img1 && !img2) {
-      cardImgs.className = 'no-images';
-      card.classList.add('no-img-card');
+      cardImgs.className = 'no-images'; card.classList.add('no-img-card');
     } else {
       card.classList.remove('no-img-card');
       const imgs = [img1, img2].filter(Boolean);
       cardImgs.className = imgs.length === 1 ? 'one-image' : '';
-      imgs.forEach(src => {
-        const el = document.createElement('img');
-        el.src = src; el.className = 'card-img'; el.alt = '';
-        cardImgs.appendChild(el);
-      });
+      imgs.forEach(src => { const el = document.createElement('img'); el.src = src; el.className = 'card-img'; cardImgs.appendChild(el); });
     }
-    cardTitle.textContent = circle.dataset.title;
-    cardText.textContent  = circle.dataset.description;
-    overlay.classList.add('active');
+    cardTitle.textContent = circleEl.dataset.title;
+    cardText.textContent  = circleEl.dataset.description;
     card.classList.add('visible');
-    slots.forEach(s => {
-      if (s !== circle.closest('.circle-slot')) s.classList.add('dimmed');
-    });
-  }
 
+    body.classList.add('dimming');
+    slots.forEach(s => s.classList.toggle('focus', s === slot));
+    setActiveArrows(slot);                 // sticky red arrow(s)
+  }
   function startHide() { hideTimer = setTimeout(hideCard, 180); }
   function cancelHide() { clearTimeout(hideTimer); }
   function hideCard() {
-    overlay.classList.remove('active');
+    /* hide the popup but KEEP the red arrows until the next circle is hovered */
     card.classList.remove('visible');
-    slots.forEach(s => s.classList.remove('dimmed'));
+    body.classList.remove('dimming');
+    slots.forEach(s => s.classList.remove('focus'));
   }
 
   document.querySelectorAll('.circle').forEach(c => {
@@ -533,7 +686,6 @@ html, body {
   card.addEventListener('mouseenter', cancelHide);
   card.addEventListener('mouseleave', startHide);
   cardClose.addEventListener('click', hideCard);
-  overlay.addEventListener('click', hideCard);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCard(); });
 })();
 </script>

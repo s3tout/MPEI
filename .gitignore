@@ -4,3 +4,8 @@ __pycache__/
 admin.py
 data.json
 templates/
+.claude/
+12121212.xlsx
+logo1.png
+map_4k.png
+_*.png
