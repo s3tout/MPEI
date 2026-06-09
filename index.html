@@ -35,20 +35,20 @@ html, body {
 /* ── Header block ── */
 .header-block {
   text-align: center;
-  padding: 60px 48px 10px;
+  padding: 28px 48px 8px;
   position: relative; z-index: 2;
 }
 .header-block h1 {
-  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
   font-weight: 300; letter-spacing: -0.01em; line-height: 1.1; color: #111;
 }
-.header-block p { margin-top: 10px; font-size: 1rem; color: #999; font-weight: 300; }
+.header-block p { margin-top: 6px; font-size: 0.9rem; color: #999; font-weight: 300; }
 
 /* ── Section wrapper ── */
 .circles-section {
   display: flex;
   justify-content: center;
-  padding: 50px 0 80px;
+  padding: 24px 0 32px;
 }
 
 /* ── Canvas ── */
@@ -169,7 +169,7 @@ html, body {
 </div>
 
 
-<div class="header-block"><h1>Экосистема МЭИ</h1><p>Восемь направлений развития студентов Московского энергетического института</p></div>
+<div class="header-block"><h1>Экосистема МЭИ</h1><p>Непрерывная подготовка кадров для технологического лидерства</p></div>
 
 
 <div class="circles-section">
@@ -240,14 +240,14 @@ html, body {
     <div class="circle-slot" data-index="4">
       <div class="circle"
         style="background: var(--blue);"
-        data-title="Инженерные чемпионаты"
-        data-description="Студенты МЭИ ежегодно участвуют в Международном инженерном чемпионате CASE-IN — крупнейшем соревновании по решению инженерных кейсов в сфере энергетики. В 2025 году финалистами стали три команды университета. Помимо этого, команда MPEI Racing представляет МЭИ на международных соревнованиях Formula Student."
-        data-card1="https://picsum.photos/seed/champ1/600/400"
-        data-card2="https://picsum.photos/seed/champ2/600/400"
+        data-title="Трудоустройство"
+        data-description="Центр развития карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходит Ярмарка вакансий с участием около 30 работодателей — РусГидро, Россети, Мосводоканал и других ведущих компаний."
+        data-card1="https://picsum.photos/seed/career1/600/400"
+        data-card2="https://picsum.photos/seed/career2/600/400"
       >
         
         <div class="circle-dim"></div>
-        <div class="circle-title">Инженерные чемпионаты</div>
+        <div class="circle-title">Трудоустройство</div>
       </div>
     </div>
     
@@ -270,14 +270,14 @@ html, body {
     <div class="circle-slot" data-index="6">
       <div class="circle"
         style="background: var(--blue);"
-        data-title="Трудоустройство"
-        data-description="Центр развития карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходит Ярмарка вакансий с участием около 30 работодателей — РусГидро, Россети, Мосводоканал и других ведущих компаний."
-        data-card1="https://picsum.photos/seed/career1/600/400"
-        data-card2="https://picsum.photos/seed/career2/600/400"
+        data-title="Инженерные чемпионаты"
+        data-description="Студенты МЭИ ежегодно участвуют в Международном инженерном чемпионате CASE-IN — крупнейшем соревновании по решению инженерных кейсов в сфере энергетики. В 2025 году финалистами стали три команды университета. Помимо этого, команда MPEI Racing представляет МЭИ на международных соревнованиях Formula Student."
+        data-card1="https://picsum.photos/seed/champ1/600/400"
+        data-card2="https://picsum.photos/seed/champ2/600/400"
       >
         
         <div class="circle-dim"></div>
-        <div class="circle-title">Трудоустройство</div>
+        <div class="circle-title">Инженерные чемпионаты</div>
       </div>
     </div>
     
@@ -301,23 +301,38 @@ html, body {
 
 <script>
 (function () {
-  /* ─── Responsive geometry: fit 4 circles in viewport width ─── */
-  const H_PAD   = 80;                          // total horizontal padding (includes arc room)
-  const MIN_GAP = 36;
-  const MAX_SZ  = 240;
-  const availW  = window.innerWidth - H_PAD;
+  /* ─── Responsive geometry: fit 4 circles in viewport width+height ─── */
+  const H_PAD      = 80;
+  const MIN_GAP    = 36;
+  const MAX_SZ     = 260;
+  const GAP_V_RATIO = 0.28;                    // vertical gap = 28% of SZ (was 42%)
+  const availW     = window.innerWidth - H_PAD;
+
+  // How many rows do we have? Pre-compute to cap SZ by height
+  const totalCircles = document.querySelectorAll('.circle-slot').length;
+  let remTmp = totalCircles, riTmp = 0, rowsTmp = 0;
+  while (remTmp > 0) { const w = riTmp % 2 === 0; remTmp -= Math.min(w ? 4 : 3, remTmp); riTmp++; rowsTmp++; }
+
+  // Height constraint: header ~80px, section padding ~56px
+  const HEADER_H  = 80;
+  const V_PAD     = 56;
+  const availH    = window.innerHeight - HEADER_H - V_PAD;
+  // canvas height = (rows-1)*(SZ*(1+GAP_V_RATIO)) + SZ = SZ*((rows-1)*(1+GAP_V_RATIO)+1)
+  const H_FACTOR  = (rowsTmp - 1) * (1 + GAP_V_RATIO) + 1;
+  const MAX_SZ_H  = Math.floor(availH / H_FACTOR);
 
   let SZ, GAP_H;
-  if ((availW - 4 * MAX_SZ) / 3 >= MIN_GAP) {
-    SZ    = MAX_SZ;
+  const effectiveMax = Math.min(MAX_SZ, MAX_SZ_H);
+  if ((availW - 4 * effectiveMax) / 3 >= MIN_GAP) {
+    SZ    = effectiveMax;
     GAP_H = Math.floor((availW - 4 * SZ) / 3);
   } else {
     GAP_H = MIN_GAP;
-    SZ    = Math.floor((availW - 3 * GAP_H) / 4);
+    SZ    = Math.min(effectiveMax, Math.floor((availW - 3 * GAP_H) / 4));
   }
 
   const UNIT     = SZ + GAP_H;
-  const GAP_V    = Math.round(SZ * 0.42);      // vertical gap ≈ 42% of SZ
+  const GAP_V    = Math.round(SZ * GAP_V_RATIO);
   const ROW_H    = SZ + GAP_V;
   const CANVAS_W = 3 * UNIT + SZ;
 
@@ -354,7 +369,7 @@ html, body {
       slot.dataset.rowFromBot = rFromBot;
       slot.dataset.col        = c;
       slot.querySelector('.circle-title').style.fontSize =
-        Math.round(SZ * 0.105) + 'px';
+        Math.round(SZ * 0.12) + 'px';
     }
   });
 
