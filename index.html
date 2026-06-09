@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Страничка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font: 'Montserrat', Georgia, serif;
+  --bg:   #ffffff;
+  --blue: #1D3C8F;
+  --red:  #C8102E;
+}
+
+html, body {
+  background: var(--bg);
+  font-family: var(--font);
+  min-height: 100vh;
+}
+
+/* ── Dim overlay ── */
+#overlay {
+  position: fixed; inset: 0;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.35s ease;
+  z-index: 10;
+}
+#overlay.active { background: rgba(0,0,0,0.50); }
+
+/* ── Header block ── */
+.header-block {
+  text-align: center;
+  padding: 60px 48px 10px;
+  position: relative; z-index: 2;
+}
+.header-block h1 {
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  font-weight: 300; letter-spacing: -0.01em; line-height: 1.1; color: #111;
+}
+.header-block p { margin-top: 10px; font-size: 1rem; color: #999; font-weight: 300; }
+
+/* ── Section wrapper ── */
+.circles-section {
+  display: flex;
+  justify-content: center;
+  padding: 50px 0 80px;
+}
+
+/* ── Canvas ── */
+#circlesCanvas {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#connections-svg {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; z-index: 1;
+  overflow: visible;
+}
+
+/* ── Circle slot ── */
+.circle-slot {
+  position: absolute;
+  z-index: 2;
+  transition: filter 0.3s ease;
+}
+.circle-slot.dimmed { filter: brightness(0.28); }
+
+/* ── Circle ── */
+.circle {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.34,1.1,0.64,1), box-shadow 0.35s ease;
+}
+.circle:hover {
+  transform: scale(1.06);
+}
+.circle img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.circle-dim {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.25); z-index: 1;
+}
+.circle-title {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 16px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.25;
+  z-index: 2;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+  /* font-size set by JS based on SZ */
+}
+
+/* ── Hover card ── */
+#hoverCard {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.93);
+  width: min(860px, 94vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.38);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.34,1.1,0.64,1);
+}
+#hoverCard.visible {
+  opacity: 1; pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#cardImages {
+  display: grid; grid-template-columns: 1fr 1fr;
+  height: 320px;
+  background: var(--blue);
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+#cardImages.one-image { grid-template-columns: 1fr; }
+#cardImages.no-images { display: none; }
+
+.card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+#cardBody { padding: 36px 44px 44px; border-top: 3px solid #f0f0f0; }
+#cardTitle {
+  font-size: 28px; font-weight: 700; color: #111;
+  letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 16px;
+}
+#cardText { font-size: 16px; line-height: 1.8; color: #555; font-weight: 300; }
+
+#cardClose {
+  position: absolute; top: 16px; right: 20px;
+  font-size: 26px; color: rgba(255,255,255,0.9);
+  cursor: pointer; z-index: 5; line-height: 1;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  transition: color 0.15s; user-select: none;
+}
+#cardClose:hover { color: #fff; }
+#hoverCard.no-img-card #cardClose { color: #aaa; text-shadow: none; }
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+
+<div id="hoverCard">
+  <span id="cardClose">×</span>
+  <div id="cardImages"></div>
+  <div id="cardBody">
+    <div id="cardTitle"></div>
+    <div id="cardText"></div>
+  </div>
+</div>
+
+
+<div class="header-block"><h1>Экосистема МЭИ</h1><p>Восемь направлений развития студентов Московского энергетического института</p></div>
+
+
+<div class="circles-section">
+  <div id="circlesCanvas">
+    <svg id="connections-svg"></svg>
+    
+    
+    <div class="circle-slot" data-index="0">
+      <div class="circle"
+        style="background: var(--blue);"
+        data-title="Ранняя профориентация"
+        data-description="МЭИ реализует широкий спектр программ для школьников: ежегодная Открытая московская инженерная конференция «Потенциал» собирает более 600 участников из Москвы и регионов, проводятся «Инженерные каникулы» для учеников 10-х классов и «Университетские субботы». Также действуют олимпиады «Надежда энергетики» по математике и физике для 7–11 классов. Победители конференции получают дополнительные баллы при поступлении в МЭИ."
+        data-card1="https://picsum.photos/seed/school1/600/400"
+        data-card2="https://picsum.photos/seed/school2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Ранняя профориентация</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="1">
+      <div class="circle"
+        style="background: var(--red);"
+        data-title="Посвящение в студенты"
+        data-description="Посвящение в студенты — многолетняя традиция МЭИ, которой с нетерпением ждут все первокурсники. Мероприятие включает верёвочный курс, командные испытания, произнесение торжественной клятвы институту и зажигательные конкурсы. Праздник организуют наставники, кураторы и деканат, чтобы новые студенты почувствовали себя частью единого студенческого братства МЭИ."
+        data-card1="https://picsum.photos/seed/students1/600/400"
+        data-card2="https://picsum.photos/seed/students2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Посвящение в студенты</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="2">
+      <div class="circle"
+        style="background: var(--blue);"
+        data-title="Проект «Эталон»"
+        data-description="Программа «Эталон» направлена на углублённую подготовку студентов по фундаментальным дисциплинам. Проект ориентирован на формирование у будущих инженеров прочной теоретической базы как эталона профессиональной компетентности. Программа сочетает академические лекции с практическими занятиями на современном оборудовании МЭИ."
+        data-card1="https://picsum.photos/seed/lab1/600/400"
+        data-card2="https://picsum.photos/seed/lab2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Проект «Эталон»</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="3">
+      <div class="circle"
+        style="background: var(--red);"
+        data-title="Интеллектуальная сборная"
+        data-description="Интеллектуальная сборная МЭИ — официальное объединение университета, которое готовит студентов к участию в олимпиадах и интеллектуальных соревнованиях любого уровня. Команда объединяет опытных наставников и победителей конкурсов, помогая участникам эффективно готовиться к состязаниям по инженерным дисциплинам, включая Всероссийский инженерный конкурс."
+        data-card1="https://picsum.photos/seed/olymp1/600/400"
+        data-card2="https://picsum.photos/seed/olymp2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Интеллектуальная сборная</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="4">
+      <div class="circle"
+        style="background: var(--blue);"
+        data-title="Инженерные чемпионаты"
+        data-description="Студенты МЭИ ежегодно участвуют в Международном инженерном чемпионате CASE-IN — крупнейшем соревновании по решению инженерных кейсов в сфере энергетики. В 2025 году финалистами стали три команды университета. Помимо этого, команда MPEI Racing представляет МЭИ на международных соревнованиях Formula Student."
+        data-card1="https://picsum.photos/seed/champ1/600/400"
+        data-card2="https://picsum.photos/seed/champ2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Инженерные чемпионаты</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="5">
+      <div class="circle"
+        style="background: var(--red);"
+        data-title="СКБ МЭИ"
+        data-description="Студенческое конструкторское бюро МЭИ открыто совместно с АО «Силовые машины». Студенты 3–4 курсов работают над реальными проектами в области паровых и газовых турбин, гидроагрегатов и систем автоматики, используя профессиональные САПР (Siemens NX, Ansys). Участники получают ежемесячную оплату до 42 000 рублей и гарантированное трудоустройство."
+        data-card1="https://picsum.photos/seed/engine1/600/400"
+        data-card2="https://picsum.photos/seed/engine2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">СКБ МЭИ</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="6">
+      <div class="circle"
+        style="background: var(--blue);"
+        data-title="Трудоустройство"
+        data-description="Центр развития карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходит Ярмарка вакансий с участием около 30 работодателей — РусГидро, Россети, Мосводоканал и других ведущих компаний."
+        data-card1="https://picsum.photos/seed/career1/600/400"
+        data-card2="https://picsum.photos/seed/career2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Трудоустройство</div>
+      </div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="7">
+      <div class="circle"
+        style="background: var(--red);"
+        data-title="Эндаумент-фонд"
+        data-description="Эндаумент-фонд МЭИ — благотворительный механизм, при котором пожертвования формируют неприкосновенный целевой капитал: сами средства не расходуются, а ежегодный инвестиционный доход направляется на поддержку студентов, преподавателей и развитие университета. Фонд создаёт устойчивый независимый источник финансирования науки и образования."
+        data-card1="https://picsum.photos/seed/fund1/600/400"
+        data-card2="https://picsum.photos/seed/fund2/600/400"
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Эндаумент-фонд</div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ─── Responsive geometry: fit 4 circles in viewport width ─── */
+  const H_PAD   = 80;                          // total horizontal padding (includes arc room)
+  const MIN_GAP = 36;
+  const MAX_SZ  = 240;
+  const availW  = window.innerWidth - H_PAD;
+
+  let SZ, GAP_H;
+  if ((availW - 4 * MAX_SZ) / 3 >= MIN_GAP) {
+    SZ    = MAX_SZ;
+    GAP_H = Math.floor((availW - 4 * SZ) / 3);
+  } else {
+    GAP_H = MIN_GAP;
+    SZ    = Math.floor((availW - 3 * GAP_H) / 4);
+  }
+
+  const UNIT     = SZ + GAP_H;
+  const GAP_V    = Math.round(SZ * 0.42);      // vertical gap ≈ 42% of SZ
+  const ROW_H    = SZ + GAP_V;
+  const CANVAS_W = 3 * UNIT + SZ;
+
+  /* Grid left-edge positions */
+  const EVEN_X = [0, UNIT, 2 * UNIT, 3 * UNIT];
+  const ODD_X  = [UNIT / 2, 1.5 * UNIT, 2.5 * UNIT];
+
+  /* ─── Build rows bottom → top ──────────────────────────────── */
+  /* row[0] = BOTTOM row (first in snake), row[last] = TOP row    */
+  const slots = [...document.querySelectorAll('.circle-slot')];
+  const total = slots.length;
+
+  const rowsFromBottom = [];  // [{count, isWide}]  isWide=true → 4 circles (EVEN_X)
+  let rem = total, ri = 0;
+  while (rem > 0) {
+    const isWide = ri % 2 === 0;   // even rows (from bottom) are wide (4)
+    const count  = Math.min(isWide ? 4 : 3, rem);
+    rowsFromBottom.push({ count, isWide, start: total - rem });
+    rem -= count; ri++;
+  }
+
+  const totalRows = rowsFromBottom.length;
+
+  /* Assign positions: row[0] goes to BOTTOM of canvas (highest y) */
+  rowsFromBottom.forEach((row, rFromBot) => {
+    const rFromTop = totalRows - 1 - rFromBot;
+    const xArr     = row.isWide ? EVEN_X : ODD_X;
+    for (let c = 0; c < row.count; c++) {
+      const slot = slots[row.start + c];
+      slot.style.width  = SZ + 'px';
+      slot.style.height = SZ + 'px';
+      slot.style.left   = Math.round(xArr[c]) + 'px';
+      slot.style.top    = Math.round(rFromTop * ROW_H) + 'px';
+      slot.dataset.rowFromBot = rFromBot;
+      slot.dataset.col        = c;
+      slot.querySelector('.circle-title').style.fontSize =
+        Math.round(SZ * 0.105) + 'px';
+    }
+  });
+
+  /* Canvas size */
+  const canvas = document.getElementById('circlesCanvas');
+  canvas.style.width  = CANVAS_W + 'px';
+  canvas.style.height = ((totalRows - 1) * ROW_H + SZ) + 'px';
+
+  /* ─── Center coords of a slot ──────────────────────────────── */
+  function C(slot) {
+    return {
+      x: parseFloat(slot.style.left) + SZ / 2,
+      y: parseFloat(slot.style.top)  + SZ / 2,
+    };
+  }
+
+  /* ─── Dashed line style ─────────────────────────────────────── */
+  function dash(el) {
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', '#bbb');
+    el.setAttribute('stroke-width', '2');
+    el.setAttribute('stroke-dasharray', '6 12');
+    el.setAttribute('stroke-linecap', 'round');
+  }
+
+  /* Straight dashed segment */
+  function drawLine(svg, p1, p2) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', p1.x); l.setAttribute('y1', p1.y);
+    l.setAttribute('x2', p2.x); l.setAttribute('y2', p2.y);
+    dash(l); svg.appendChild(l);
+  }
+
+  /*
+    True D-shaped circular arc using SVG arc command.
+    Approximates a semicircle on the side, connecting p1 to p2.
+    side = 'right' → bulges right, side = 'left' → bulges left.
+  */
+  function drawArc(svg, p1, p2, side) {
+    const sign  = side === 'right' ? 1 : -1;
+    const dx    = p2.x - p1.x;
+    const dy    = p2.y - p1.y;
+    const chord = Math.sqrt(dx * dx + dy * dy);
+
+    /* Radius: make the arc a nice semicircle-ish shape.
+       For a true semicircle the radius = chord/2. We use chord*0.58
+       to get a well-rounded but not too tight arc. */
+    const r = Math.round(chord * 0.58);
+
+    /* SVG arc: rx ry x-rot large-arc-flag sweep-flag x y
+       sweep=1 → clockwise, 0 → counter-clockwise.
+       For right bulge going upward: sweep=0
+       For left  bulge going upward: sweep=1  */
+    const sweep = side === 'right' ? 0 : 1;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d',
+      `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 ${sweep} ${p2.x} ${p2.y}`
+    );
+    dash(path); svg.appendChild(path);
+  }
+
+  /* ─── Draw all connections (boustrophedon, bottom→top) ──────── */
+  function drawLines() {
+    const svg = document.getElementById('connections-svg');
+    svg.innerHTML = '';
+
+    /*
+      Direction of each row (from the snake's perspective):
+      rFromBot=0 (bottom): LEFT → RIGHT
+      rFromBot=1:          RIGHT → LEFT
+      rFromBot=2:          LEFT → RIGHT
+      etc.
+    */
+    rowsFromBottom.forEach((row, rFromBot) => {
+      const goRight  = rFromBot % 2 === 0;
+      const rowSlots = slots.slice(row.start, row.start + row.count);
+
+      /* Within-row connections */
+      if (goRight) {
+        for (let c = 0; c < rowSlots.length - 1; c++)
+          drawLine(svg, C(rowSlots[c]), C(rowSlots[c + 1]));
+      } else {
+        for (let c = rowSlots.length - 1; c > 0; c--)
+          drawLine(svg, C(rowSlots[c]), C(rowSlots[c - 1]));
+      }
+
+      /* Arc to the next row UP */
+      if (rFromBot < rowsFromBottom.length - 1) {
+        const nextRow   = rowsFromBottom[rFromBot + 1];
+        const nextSlots = slots.slice(nextRow.start, nextRow.start + nextRow.count);
+
+        if (goRight) {
+          /* Ended at rightmost of current → arc RIGHT to rightmost of row above */
+          drawArc(svg,
+            C(rowSlots[rowSlots.length - 1]),
+            C(nextSlots[nextSlots.length - 1]),
+            'right');
+        } else {
+          /* Ended at leftmost of current → arc LEFT to leftmost of row above */
+          drawArc(svg,
+            C(rowSlots[0]),
+            C(nextSlots[0]),
+            'left');
+        }
+      }
+    });
+  }
+
+  window.addEventListener('load', drawLines);
+  window.addEventListener('resize', () => location.reload());
+
+  /* ─── Hover card ────────────────────────────────────────────── */
+  const overlay   = document.getElementById('overlay');
+  const card      = document.getElementById('hoverCard');
+  const cardImgs  = document.getElementById('cardImages');
+  const cardTitle = document.getElementById('cardTitle');
+  const cardText  = document.getElementById('cardText');
+  const cardClose = document.getElementById('cardClose');
+  let hideTimer   = null;
+
+  function showCard(circle) {
+    clearTimeout(hideTimer);
+    const img1 = circle.dataset.card1;
+    const img2 = circle.dataset.card2;
+    cardImgs.innerHTML = '';
+    if (!img1 && !img2) {
+      cardImgs.className = 'no-images';
+      card.classList.add('no-img-card');
+    } else {
+      card.classList.remove('no-img-card');
+      const imgs = [img1, img2].filter(Boolean);
+      cardImgs.className = imgs.length === 1 ? 'one-image' : '';
+      imgs.forEach(src => {
+        const el = document.createElement('img');
+        el.src = src; el.className = 'card-img'; el.alt = '';
+        cardImgs.appendChild(el);
+      });
+    }
+    cardTitle.textContent = circle.dataset.title;
+    cardText.textContent  = circle.dataset.description;
+    overlay.classList.add('active');
+    card.classList.add('visible');
+    slots.forEach(s => {
+      if (s !== circle.closest('.circle-slot')) s.classList.add('dimmed');
+    });
+  }
+
+  function startHide() { hideTimer = setTimeout(hideCard, 180); }
+  function cancelHide() { clearTimeout(hideTimer); }
+  function hideCard() {
+    overlay.classList.remove('active');
+    card.classList.remove('visible');
+    slots.forEach(s => s.classList.remove('dimmed'));
+  }
+
+  document.querySelectorAll('.circle').forEach(c => {
+    c.addEventListener('mouseenter', () => showCard(c));
+    c.addEventListener('mouseleave', startHide);
+  });
+  card.addEventListener('mouseenter', cancelHide);
+  card.addEventListener('mouseleave', startHide);
+  cardClose.addEventListener('click', hideCard);
+  overlay.addEventListener('click', hideCard);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCard(); });
+})();
+</script>
+</body>
+</html>
