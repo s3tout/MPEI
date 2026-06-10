@@ -192,7 +192,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   color: #fff; font-weight: 700;
   letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.18;
   z-index: 2; text-shadow: 0 1px 12px rgba(0,0,0,0.55);
-  word-break: break-word; hyphens: auto;
+  overflow-wrap: break-word; hyphens: auto;
 }
 
 /* ── Sequence badge ── */
@@ -489,6 +489,35 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 
   const titleRatio = 0.12;
 
+  /* Russian syllable soft-hyphenation (works on old Chromium without hyphens:auto) */
+  const SHY = '­';
+  function hyphenateRu(text) {
+    const V = 'аеёиоуыэюяАЕЁИОУЫЭЮЯ';
+    const SIGN = 'йьъЙЬЪ';
+    const isV = c => V.indexOf(c) !== -1;
+    const isSign = c => SIGN.indexOf(c) !== -1;
+    return text.replace(/[А-Яа-яЁё]+/g, function (word) {
+      if (word.length < 5) return word;
+      const vi = [];
+      for (let i = 0; i < word.length; i++) if (isV(word[i])) vi.push(i);
+      if (vi.length < 2) return word;
+      const breaks = {};
+      for (let k = 0; k < vi.length - 1; k++) {
+        const p = vi[k], q = vi[k + 1];
+        const cnt = q - p - 1;                 // consonants between the two vowels
+        let after = (cnt >= 2) ? p + 1 : p;    // 2+ cons → split between them; else break before cons/vowel
+        while (after + 1 < word.length && isSign(word[after + 1])) after++;  // keep й/ь/ъ with its base
+        if (after >= 1 && after <= word.length - 3) breaks[after] = true;
+      }
+      let out = '';
+      for (let i = 0; i < word.length; i++) {
+        out += word[i];
+        if (breaks[i]) out += SHY;
+      }
+      return out;
+    });
+  }
+
   rowsFromBottom.forEach((row, rFromBot) => {
     const rFromTop = totalRows - 1 - rFromBot;
     const xArr = rowX(row.count);
@@ -505,8 +534,9 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
       const longest = Math.max(...txt.split(/\s+/).map(w => w.length));
       const innerW = SZ * 0.78;
       const baseFont = SZ * titleRatio;
-      const fitFont  = innerW / (longest * 0.60);
+      const fitFont  = innerW / (longest * 0.62);
       titleEl.style.fontSize = Math.round(Math.max(12, Math.min(baseFont, fitFont))) + 'px';
+      titleEl.textContent = hyphenateRu(txt);   // insert soft hyphens by syllable
     }
   });
 
