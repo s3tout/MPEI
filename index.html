@@ -192,7 +192,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   color: #fff; font-weight: 700;
   letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.18;
   z-index: 2; text-shadow: 0 1px 12px rgba(0,0,0,0.55);
-  overflow-wrap: break-word; hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 /* ── Sequence badge ── */
@@ -518,6 +518,14 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
     });
   }
 
+  /* Manual title layout overrides: <br> = forced line break, ­ = soft hyphen */
+  const TITLE_OVERRIDE = {
+    'Ранняя профориентация':    'РАННЯЯ<br>ПРОФОРИЕН­ТАЦИЯ',
+    'Посвящение в студенты':    'ПОСВЯЩЕНИЕ<br>В СТУДЕНТЫ',
+    'Интеллектуальная сборная': 'ИНТЕЛЛЕКТУ­АЛЬНАЯ<br>СБОРНАЯ',
+    'Инженерные чемпионаты':    'ИНЖЕНЕРНЫЕ<br>ЧЕМПИОНАТЫ'
+  };
+
   rowsFromBottom.forEach((row, rFromBot) => {
     const rFromTop = totalRows - 1 - rFromBot;
     const xArr = rowX(row.count);
@@ -531,12 +539,22 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 
       const titleEl = slot.querySelector('.circle-title');
       const txt = titleEl.textContent.trim();
-      const longest = Math.max(...txt.split(/\s+/).map(w => w.length));
+      const override = TITLE_OVERRIDE[txt];
+      let longest, F;
+      if (override) {
+        const tokens = override.replace(/<br>/g, ' ').split(/[\s­]+/).filter(Boolean);
+        longest = Math.max(...tokens.map(t => t.length));
+        F = 0.70;                               // a bit smaller so forced lines always fit
+      } else {
+        longest = Math.max(...txt.split(/\s+/).map(w => w.length));
+        F = 0.62;
+      }
       const innerW = SZ * 0.78;
       const baseFont = SZ * titleRatio;
-      const fitFont  = innerW / (longest * 0.62);
+      const fitFont  = innerW / (longest * F);
       titleEl.style.fontSize = Math.round(Math.max(12, Math.min(baseFont, fitFont))) + 'px';
-      titleEl.textContent = hyphenateRu(txt);   // insert soft hyphens by syllable
+      if (override) titleEl.innerHTML = override;
+      else titleEl.textContent = hyphenateRu(txt);   // auto soft hyphens by syllable
     }
   });
 
