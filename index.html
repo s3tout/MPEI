@@ -228,15 +228,24 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 #cardImages.no-images { display: none; }
 .card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 #cardBody { padding: 32px 42px 40px; }
+#cardTitleRow {
+  display: flex; align-items: center; gap: 22px;
+  margin-bottom: 14px;
+}
 #cardTitle {
   font-family: 'Montserrat', sans-serif;
   font-size: 27px; font-weight: 800; color: #111;
-  letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 14px;
+  letter-spacing: -0.01em; line-height: 1.2;
 }
 #cardTitle::after {
   content: ''; display: block; width: 54px; height: 4px; margin-top: 12px;
   background: var(--red); border-radius: 3px;
 }
+#cardLogo {
+  height: 70px; width: auto; flex-shrink: 0; display: none;
+  margin-left: auto;
+}
+#cardLogo.show { display: block; }
 #cardText { font-size: 16px; line-height: 1.75; color: #555; font-weight: 400; }
 #cardClose {
   position: absolute; top: 14px; right: 18px; font-size: 26px;
@@ -261,7 +270,10 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   <span id="cardClose">×</span>
   <div id="cardImages"></div>
   <div id="cardBody">
-    <div id="cardTitle"></div>
+    <div id="cardTitleRow">
+      <div id="cardTitle"></div>
+      <img id="cardLogo" alt="">
+    </div>
     <div id="cardText"></div>
   </div>
 </div>
@@ -285,6 +297,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="МЭИ реализует широкий спектр программ для школьников: функционирует «Школа Юного энергетика», ежегодная Открытая московская инженерная конференция «Потенциал» собирает более 600 участников из Москвы и регионов, действуют Олимпиады школьников «Надежда энергетики» по математике, физике и информатике для 5–11 классов. Летняя инженерная школа «iEnergy» ежегодно собирает талантливых старшеклассников со всей России, а Всероссийский фестиваль энергосбережения «Вместе ярче», учредителем которого является МЭИ совместно с Минэнерго России, популяризирует инженерные профессии среди десятков тысяч школьников."
         data-card1="static/uploads/50581cae5b0a4e29996c48294de531ea.jpg"
         data-card2="static/uploads/856e1c3113274a70800288138c839c4c.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -300,6 +313,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="«Посвящение в студенты» — это яркая традиция МЭИ, направленная на мягкую адаптацию и сплочение первокурсников. В рамках мероприятия студенты знакомятся с традициями МЭИ, преподавателями и возможностями внеучебной жизни через увлекательный квест по кампусу, встречи со студенческими организациями и интерактивные лекции. Кульминацией становится масштабный спортивный праздник на стадионе «Энергия» с верёвочным курсом и произнесением торжественной клятвы. Организаторы в лице дирекций институтов и студенческого актива (наставники, профлидеры и адаптеры) делают всё, чтобы каждый первокурсник с первых дней почувствовал поддержку и стал частью большой и дружной семьи МЭИ."
         data-card1="static/uploads/8581e0af78be41928f81ce3cd3b5d796.jpg"
         data-card2="static/uploads/186b981b512a4895bcd9e6e74fe4648e.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -315,6 +329,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Программа «Эталон» готовит студентов по фундаментальным дисциплинам, давая будущим инженерам прочную теоретическую базу. В ней есть и углубленные лекции, и практика на современном оборудовании МЭИ.  Студенты ЭТАЛОН выезжают на отраслевые форумы и на стратегических сессиях сами помогают университету формировать  образовательную среду, необходимую для развития талантов."
         data-card1="static/uploads/18fe7b9f282b413e9057be14d39c848a.jpg"
         data-card2="static/uploads/a778b0d600584fb88e01ee1a12094e2c.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -330,6 +345,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Интеллектуальная сборная МЭИ — это сообщество, в котором студенты разных институтов объединяются в кросс-дисциплинарные группы и системно готовятся к олимпиадам, чемпионатам, конкурсам и хакатонам. Результат системой подготовки - за несколько лет Интеллектуальная Сборная МЭИ вышла в лидеры на всех крупнейших отраслевых соревнованиях страны — «Я — профессионал», Всероссийский инженерный конкурс, международный инженерный чемпионат «Case In», «Молодёжный глобальный прогноз развития энергетики» и др. Успехи студентов сборной отмечают стипендиями Президента, правительства РФ и отраслевыми именными стипендиями."
         data-card1="static/uploads/60dbd500fe534e85b10813a534bbcb3f.jpg"
         data-card2="static/uploads/5d4a7f60ab46434ba451f9c872880855.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -345,6 +361,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Центр карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходят Дни карьеры с участием более 100 работодателей — РусГидро, Россети, Газпром энергохолдинг, Ростех и других ведущих компаний."
         data-card1="static/uploads/a1351f3caf944c90b90030b69a1a8e64.jpg"
         data-card2="static/uploads/2f5c472d995f472b88f95bc8e3228872.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -360,6 +377,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Сеть Студенческих конструкторских бюро (СКБ) НИУ «МЭИ» признана одной из лучших практик в рамках программы «Приоритет 2030». Главная цель СКБ — подготовка кадрового резерва и объединение теоретической базы с решением реальных задач от индустриальных партнеров."
         data-card1="static/uploads/4e70f82338b140ba85ea82a11e2c79e9.jpg"
         data-card2="static/uploads/e0c6e24df40547388db4bdee5382da75.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -375,6 +393,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Инженерные чемпионаты — это не только способ найти талантливых студентов и помочь компаниям-партнёрам подобрать сотрудников, готовых к нестандартным задачам. Это ещё и инструмент, который позволяет динамично обновлять образовательную программу: лучшие практики из факультативов по подготовке к соревнованиям масштабируются на весь учебный процесс. Например, студенты МЭИ ежегодно участвуют в Международном инженерном чемпионате CASE-IN (в 2025 году три команды вышли в финал)."
         data-card1="static/uploads/819803ecc0694f2f99cb42d8f75513a2.jpg"
         data-card2="static/uploads/a21eb8b52b694131a9b1252057128e6a.jpg"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -390,6 +409,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="Выпускники МЭИ возглавляют крупнейшие энергетические и промышленные компании страны — РусГидро, Россети, Интер РАО, Объединённую двигателестроительную корпорацию. Многие из них возвращаются в университет в качестве наставников, преподавателей и членов попечительского совета, передавая опыт новым поколениям инженеров и замыкая цикл подготовки кадров: от школьной профориентации до формирования технологической элиты отрасли."
         data-card1="static/uploads/94fdf60da2cc49799c36b5947f76a61d.png"
         data-card2="static/uploads/20c7ec1500864d8ba01dae3d9713f2d4.png"
+        data-card-logo=""
       >
         
         <div class="circle-dim"></div>
@@ -405,6 +425,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
         data-description="К 100-летнему Юбилею МЭИ Эндаумент-фонд МЭИ запустил проект «100 лет МЭИ» — сбор 100 млн рублей в целевой капитал «Первый Энергетический». Среди жертвователей выпускники, сотрудники и партнёры университета, включая ПАО «Сбербанк». Доход от капитала направится на стипендии талантливым студентам, поддержку молодых учёных, развитие инфраструктуры МЭИ и поддержку международных программ. На текущий момент собрано более 13,5 млн рублей."
         data-card1="static/uploads/05c6cd17a85f45988b5bf25c7384c6bf.png"
         data-card2="static/uploads/61ea41885deb4ef6bf3cef0ab5c87bf4.png"
+        data-card-logo="static/endaument_logo.png"
       >
         
         <div class="circle-dim"></div>
@@ -636,6 +657,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   const card      = document.getElementById('hoverCard');
   const cardImgs  = document.getElementById('cardImages');
   const cardTitle = document.getElementById('cardTitle');
+  const cardLogo  = document.getElementById('cardLogo');
   const cardText  = document.getElementById('cardText');
   const cardClose = document.getElementById('cardClose');
   let hideTimer = null, activeSegs = [];
@@ -663,6 +685,9 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
       imgs.forEach(src => { const el = document.createElement('img'); el.src = src; el.className = 'card-img'; cardImgs.appendChild(el); });
     }
     cardTitle.textContent = circleEl.dataset.title;
+    const logo = circleEl.dataset.cardLogo;
+    if (logo) { cardLogo.src = logo; cardLogo.classList.add('show'); }
+    else { cardLogo.classList.remove('show'); cardLogo.removeAttribute('src'); }
     cardText.textContent  = circleEl.dataset.description;
     card.classList.add('visible');
 
