@@ -76,12 +76,12 @@ body { position: relative; }
 
 /* ════════════ Header ════════════ */
 .topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 32px;
-  padding: 22px 46px 14px;
-  position: relative; z-index: 5;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 32px; padding: 26px 44px;
+  pointer-events: none;
 }
-.title-wrap { display: flex; align-items: center; gap: 18px; }
+.title-wrap { display: flex; align-items: stretch; gap: 18px; }
 .title-accent {
   width: 6px; align-self: stretch; border-radius: 4px;
   background: linear-gradient(180deg, var(--red), #ff5a73);
@@ -89,11 +89,11 @@ body { position: relative; }
 }
 .topbar h1 {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.3rem, 2.5vw, 2.5rem);
-  font-weight: 800; line-height: 1.05;
+  font-size: clamp(1.2rem, 2.1vw, 2.15rem);
+  font-weight: 800; line-height: 1.12;
   letter-spacing: -0.01em;
   color: var(--text);
-  text-shadow: 0 2px 24px rgba(0,0,0,0.25);
+  text-shadow: 0 2px 24px rgba(0,0,0,0.18);
 }
 .topbar h1 .accent { color: #ff5a73; }
 .header-logo {
@@ -104,8 +104,8 @@ body { position: relative; }
 
 /* ════════════ Circles canvas ════════════ */
 .circles-section {
-  display: flex; justify-content: center;
-  padding: 14px 0 26px;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh; padding: 0;
   position: relative; z-index: 2;
 }
 #circlesCanvas { position: relative; flex-shrink: 0; }
@@ -301,7 +301,9 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
 <header class="topbar">
   <div class="title-wrap">
     <span class="title-accent"></span>
-    <h1>Непрерывная опережающая подготовка</h1>
+    
+    
+    <h1>Непрерывная опережающая<br>подготовка</h1>
   </div>
   <img class="header-logo" src="static/logo_color.png" alt="МЭИ">
 </header>
@@ -377,15 +379,15 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
     
     <div class="circle-slot" data-index="4">
       <div class="circle cb"
-        data-title="Трудоустройство"
-        data-description="Центр карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходят Дни карьеры с участием более 100 работодателей — РусГидро, Россети, Газпром энергохолдинг, Ростех и других ведущих компаний."
-        data-card1="static/uploads/a1351f3caf944c90b90030b69a1a8e64.jpg"
-        data-card2="static/uploads/2f5c472d995f472b88f95bc8e3228872.jpg"
+        data-title="Карта роста"
+        data-description="«Карта роста» — это персональная траектория развития студента МЭИ от первого курса до трудоустройства. Она объединяет учебные курсы, проектную работу в СКБ, участие в чемпионатах и стажировки в единый маршрут, помогая каждому осознанно наращивать компетенции, фиксировать достижения и видеть конкретные шаги к карьере в энергетике. Наставники и Центр карьеры сопровождают студента на каждом этапе пути."
+        data-card1="https://picsum.photos/seed/growth1/600/400"
+        data-card2="https://picsum.photos/seed/growth2/600/400"
         data-card-logo=""
       >
         
         <div class="circle-dim"></div>
-        <div class="circle-title">Трудоустройство</div>
+        <div class="circle-title">Карта роста</div>
       </div>
       <div class="seq-badge"></div>
     </div>
@@ -425,6 +427,22 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
     
     <div class="circle-slot" data-index="7">
       <div class="circle cr"
+        data-title="Трудоустройство"
+        data-description="Центр карьеры МЭИ помогает студентам и выпускникам выстраивать профессиональные траектории: организует стажировки, информирует о вакансиях партнёров и проводит карьерные мероприятия. Дважды в год проходят Дни карьеры с участием более 100 работодателей — РусГидро, Россети, Газпром энергохолдинг, Ростех и других ведущих компаний."
+        data-card1="static/uploads/a1351f3caf944c90b90030b69a1a8e64.jpg"
+        data-card2="static/uploads/2f5c472d995f472b88f95bc8e3228872.jpg"
+        data-card-logo=""
+      >
+        
+        <div class="circle-dim"></div>
+        <div class="circle-title">Трудоустройство</div>
+      </div>
+      <div class="seq-badge"></div>
+    </div>
+    
+    
+    <div class="circle-slot" data-index="8">
+      <div class="circle cb"
         data-title="Лидеры отрасли"
         data-description="Выпускники МЭИ возглавляют крупнейшие энергетические и промышленные компании страны — РусГидро, Россети, Интер РАО, Объединённую двигателестроительную корпорацию. Многие из них возвращаются в университет в качестве наставников, преподавателей и членов попечительского совета, передавая опыт новым поколениям инженеров и замыкая цикл подготовки кадров: от школьной профориентации до формирования технологической элиты отрасли."
         data-card1="static/uploads/94fdf60da2cc49799c36b5947f76a61d.png"
@@ -439,8 +457,8 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
     </div>
     
     
-    <div class="circle-slot" data-index="8">
-      <div class="circle cb"
+    <div class="circle-slot" data-index="9">
+      <div class="circle cr"
         data-title="Эндаумент-фонд"
         data-description="К 100-летнему Юбилею МЭИ Эндаумент-фонд МЭИ запустил проект «100 лет МЭИ» — сбор 100 млн рублей в целевой капитал «Первый Энергетический». Среди жертвователей выпускники, сотрудники и партнёры университета, включая ПАО «Сбербанк». Доход от капитала направится на стипендии талантливым студентам, поддержку молодых учёных, развитие инфраструктуры МЭИ и поддержку международных программ. На текущий момент собрано более 13,5 млн рублей."
         data-card1="static/uploads/05c6cd17a85f45988b5bf25c7384c6bf.png"
@@ -464,22 +482,22 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
   const MIN_GAP     = 36;
   const MAX_SZ      = 300;
   const MAX_GAP_RATIO = 0.72;
-  const GAP_V_RATIO = 0.30;
-  const HEADER_H    = 200;
-  const V_PAD       = 56;
+  const GAP_V_RATIO = 0.15;
+  const HEADER_H    = 58;   /* title/logo overlay the corners, so they don't steal height */
+  const V_PAD       = 58;
   const availW      = window.innerWidth - H_PAD;
 
   const slots = [...document.querySelectorAll('.circle-slot')];
   const total = slots.length;
 
-  /* rows bottom→top, wide(4)/narrow(3) alternating */
+  /* pyramid: bottom row 4, each row up one fewer (…4-3-2-1) */
   const rowsFromBottom = [];
-  let rem = total, ri = 0;
+  let rem = total, w = 4;
   while (rem > 0) {
-    const isWide = ri % 2 === 0;
-    const count  = Math.min(isWide ? 4 : 3, rem);
-    rowsFromBottom.push({ count, isWide, start: total - rem });
-    rem -= count; ri++;
+    const count = Math.min(w, rem);
+    rowsFromBottom.push({ count, start: total - rem });
+    rem -= count;
+    if (w > 1) w--;
   }
   const totalRows = rowsFromBottom.length;
 
@@ -544,7 +562,8 @@ body.dimming .card-nav { opacity: 1; pointer-events: auto; }
     'Посвящение в студенты':    'ПОСВЯЩЕНИЕ<br>В СТУДЕНТЫ',
     'Интеллектуальная сборная': 'ИНТЕЛЛЕКТУ­АЛЬНАЯ<br>СБОРНАЯ',
     'Инженерные чемпионаты':    'ИНЖЕНЕРНЫЕ<br>ЧЕМПИОНАТЫ',
-    'ПНИ СКБ МЭИ':              'ПНИ<br>СКБ МЭИ'
+    'ПНИ СКБ МЭИ':              'ПНИ<br>СКБ МЭИ',
+    'Карта роста':              'КАРТА<br>РОСТА'
   };
 
   rowsFromBottom.forEach((row, rFromBot) => {
