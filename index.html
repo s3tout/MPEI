@@ -247,6 +247,23 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 }
 #cardLogo.show { display: block; }
 #cardText { font-size: 16px; line-height: 1.75; color: #555; font-weight: 400; }
+.card-nav {
+  position: fixed; top: 50%;
+  transform: translateY(-50%);
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #fff; color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 700; line-height: 1; padding-bottom: 5px;
+  cursor: pointer; user-select: none; z-index: 101;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.28);
+  opacity: 0; pointer-events: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, opacity 0.25s ease;
+}
+body.dimming .card-nav { opacity: 1; pointer-events: auto; }
+.card-nav:hover { background: var(--blue); color: #fff; transform: translateY(-50%) scale(1.08); }
+.card-nav.prev { left:  calc(50% - min(430px, 46vw) - 78px); }
+.card-nav.next { right: calc(50% - min(430px, 46vw) - 78px); }
+
 #cardClose {
   position: absolute; top: 14px; right: 18px; font-size: 26px;
   color: rgba(255,255,255,0.95); cursor: pointer; z-index: 5; line-height: 1;
@@ -265,6 +282,9 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
 <div class="glow g3"></div>
 <canvas id="bg-canvas"></canvas>
 
+
+<div class="card-nav prev" id="cardPrev">‹</div>
+<div class="card-nav next" id="cardNext">›</div>
 
 <div id="hoverCard">
   <span id="cardClose">×</span>
@@ -373,7 +393,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
     
     <div class="circle-slot" data-index="5">
       <div class="circle cr"
-        data-title="СКБ МЭИ"
+        data-title="ПНИ СКБ МЭИ"
         data-description="Сеть Студенческих конструкторских бюро (СКБ) НИУ «МЭИ» признана одной из лучших практик в рамках программы «Приоритет 2030». Главная цель СКБ — подготовка кадрового резерва и объединение теоретической базы с решением реальных задач от индустриальных партнеров."
         data-card1="static/uploads/4e70f82338b140ba85ea82a11e2c79e9.jpg"
         data-card2="static/uploads/e0c6e24df40547388db4bdee5382da75.jpg"
@@ -381,7 +401,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
       >
         
         <div class="circle-dim"></div>
-        <div class="circle-title">СКБ МЭИ</div>
+        <div class="circle-title">ПНИ СКБ МЭИ</div>
       </div>
       <div class="seq-badge"></div>
     </div>
@@ -523,7 +543,8 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
     'Ранняя профориентация':    'РАННЯЯ<br>ПРОФОРИЕН­ТАЦИЯ',
     'Посвящение в студенты':    'ПОСВЯЩЕНИЕ<br>В СТУДЕНТЫ',
     'Интеллектуальная сборная': 'ИНТЕЛЛЕКТУ­АЛЬНАЯ<br>СБОРНАЯ',
-    'Инженерные чемпионаты':    'ИНЖЕНЕРНЫЕ<br>ЧЕМПИОНАТЫ'
+    'Инженерные чемпионаты':    'ИНЖЕНЕРНЫЕ<br>ЧЕМПИОНАТЫ',
+    'ПНИ СКБ МЭИ':              'ПНИ<br>СКБ МЭИ'
   };
 
   rowsFromBottom.forEach((row, rFromBot) => {
@@ -700,7 +721,7 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   window.addEventListener('load', () => { buildSegments(); initParticles(); });
   window.addEventListener('resize', () => location.reload());
 
-  /* ─── Hover card + red-arrow flow ─── */
+  /* ─── Click card + arrow navigation ─── */
   const body      = document.body;
   const card      = document.getElementById('hoverCard');
   const cardImgs  = document.getElementById('cardImages');
@@ -708,20 +729,17 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
   const cardLogo  = document.getElementById('cardLogo');
   const cardText  = document.getElementById('cardText');
   const cardClose = document.getElementById('cardClose');
-  let hideTimer = null, activeSegs = [];
+  const cardPrev  = document.getElementById('cardPrev');
+  const cardNext  = document.getElementById('cardNext');
+  let curIdx = -1, activeSegs = [];
 
-  /* Sticky: highlight stays until another circle is hovered */
   function setActiveArrows(slot) {
-    const next = outgoing[+slot.dataset.snakeIdx] || [];
-    if (next === activeSegs) return;
     activeSegs.forEach(s => s.classList.remove('active'));
-    activeSegs = next.slice();
+    activeSegs = (outgoing[+slot.dataset.snakeIdx] || []).slice();
     activeSegs.forEach(s => s.classList.add('active'));
   }
 
-  function showCard(circleEl) {
-    clearTimeout(hideTimer);
-    const slot = circleEl.closest('.circle-slot');
+  function fillCard(circleEl) {
     const img1 = circleEl.dataset.card1, img2 = circleEl.dataset.card2;
     cardImgs.innerHTML = '';
     if (!img1 && !img2) {
@@ -736,30 +754,50 @@ body.dimming .circle-slot:not(.focus) { opacity: 0.32; }
     const logo = circleEl.dataset.cardLogo;
     if (logo) { cardLogo.src = logo; cardLogo.classList.add('show'); }
     else { cardLogo.classList.remove('show'); cardLogo.removeAttribute('src'); }
-    cardText.textContent  = circleEl.dataset.description;
-    card.classList.add('visible');
+    cardText.textContent = circleEl.dataset.description;
+  }
 
+  /* Open the card at a given position in the snake (wraps around) */
+  function openAt(idx) {
+    const n = snakeOrder.length;
+    curIdx = ((idx % n) + n) % n;
+    const slot = snakeOrder[curIdx];
+    fillCard(slot.querySelector('.circle'));
+    card.scrollTop = 0;
+    card.classList.add('visible');
     body.classList.add('dimming');
     slots.forEach(s => s.classList.toggle('focus', s === slot));
-    setActiveArrows(slot);                 // sticky red arrow(s)
+    setActiveArrows(slot);
   }
-  function startHide() { hideTimer = setTimeout(hideCard, 180); }
-  function cancelHide() { clearTimeout(hideTimer); }
-  function hideCard() {
-    /* hide the popup but KEEP the red arrows until the next circle is hovered */
+  function closeCard() {
     card.classList.remove('visible');
     body.classList.remove('dimming');
     slots.forEach(s => s.classList.remove('focus'));
+    activeSegs.forEach(s => s.classList.remove('active'));
+    activeSegs = []; curIdx = -1;
   }
 
   document.querySelectorAll('.circle').forEach(c => {
-    c.addEventListener('mouseenter', () => showCard(c));
-    c.addEventListener('mouseleave', startHide);
+    c.addEventListener('click', () => openAt(+c.closest('.circle-slot').dataset.snakeIdx));
   });
-  card.addEventListener('mouseenter', cancelHide);
-  card.addEventListener('mouseleave', startHide);
-  cardClose.addEventListener('click', hideCard);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCard(); });
+  cardPrev.addEventListener('click', e => { e.stopPropagation(); openAt(curIdx - 1); });
+  cardNext.addEventListener('click', e => { e.stopPropagation(); openAt(curIdx + 1); });
+  cardClose.addEventListener('click', closeCard);
+
+  /* click on empty space closes; click on another circle switches */
+  document.addEventListener('click', e => {
+    if (!card.classList.contains('visible')) return;
+    if (card.contains(e.target)) return;
+    if (e.target.closest('.circle')) return;
+    closeCard();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCard();
+    else if (card.classList.contains('visible')) {
+      if (e.key === 'ArrowLeft')  { openAt(curIdx - 1); }
+      if (e.key === 'ArrowRight') { openAt(curIdx + 1); }
+    }
+  });
 })();
 </script>
 </body>
